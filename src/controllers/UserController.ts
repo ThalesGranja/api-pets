@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/IUser';
-import createUserToken from '../helpers/create-user-token'
-import { register } from 'module';
+import jwt from 'jsonwebtoken';
+
+// helpers
+import createUserToken from '../helpers/create-user-token';
+import getToken from '../helpers/get-token';
 
 export const UserController = {
   register: async (req: Request, res: Response) => {
@@ -91,5 +94,24 @@ export const UserController = {
     }
 
     await createUserToken(user, req, res);
+  },
+
+  checkUser: async (req: Request, res: Response) => {
+    let currentUser
+
+    console.log(req.headers.authorization)
+
+    if (req.headers.authorization) {
+      const token = getToken(req);
+      const decoded = jwt.verify(token, 'nossosecret');
+
+      currentUser = await User.findById(decoded.id);
+      currentUser?.password = undefined;
+
+    } else {
+      currentUser = null;
+    }
+
+    res.status(200).send(currentUser);
   }
 }
