@@ -1,7 +1,17 @@
 import mongoose from '../db/conn';
+import { Document } from 'mongoose';
+
 const Schema = mongoose.Schema;
 
-const User = mongoose.model(
+// interface
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password?: string;
+  phone: string;
+}
+
+const User = mongoose.model<IUser>(
   'User',
   new Schema(
     {
