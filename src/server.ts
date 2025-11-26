@@ -1,5 +1,6 @@
 // config inicial
-import express, { Request, Response } from 'express';
+import express, { Request, Response } from "express";
+import UserRoutes from "./routes/UserRoutes";
 
 const app = express();
 
@@ -7,7 +8,7 @@ const app = express();
 app.use(express.json());
 
 // routes
-
+app.use('/users', UserRoutes)
 const PORT = 5000;
 
 app.listen(PORT, () => {
