@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/IUser';
+import createUserToken from '../helpers/create-user-token'
 
 export const UserController = {
   create: async (req: Request, res: Response) => {
@@ -54,7 +55,8 @@ export const UserController = {
 
     try {
       const newUser = await user.save();
-      res.status(201).json({ message: 'Usuário criado!', newUser });
+
+      await createUserToken(newUser, req, res);
     } catch (error) {
       res.status(500).json({ message: error });
     }
