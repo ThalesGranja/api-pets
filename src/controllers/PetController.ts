@@ -1,7 +1,9 @@
-import { Request, response, Response } from 'express';
-import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import Pet from '../models/IPet';
-import jwt from 'jsonwebtoken';
+import { Types } from 'mongoose';
+
+const ObjectId = Types.ObjectId;
+
 
 // helpers
 import createUserToken from '../helpers/create-user-token';
@@ -100,5 +102,26 @@ export const PetController = {
     const pets = await Pet.find({ 'adopter._id': user._id }).sort('-createdAt');
 
     res.status(200).json({ pets })
+  },
+
+  getPetById: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    if (!id) {
+      res.status(401).json({ message: 'ID necessário' });
+      return
+    }
+    if (!ObjectId.isValid(id)) {
+      res.status(422).json({ message: 'ID inválido' });
+      return
+    }
+
+    const pet = await Pet.findOne({ _id: id });
+
+    if (!pet) {
+      res.status(404).json({ message: 'Pet não encontrado!' });
+    }
+
+    res.status(200).json({ pet: pet });
   }
 }
