@@ -280,5 +280,40 @@ export const PetController = {
     await Pet.findByIdAndUpdate(id, pet)
     res.status(200).json({ message: `A visita foi agendada com sucesso, entre em contato com ${pet.user.name} pelo telefone ${pet.user.phone}` });
     return
+  },
+
+  concludeAdoption: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    // check if pet exists
+    const pet = await Pet.findOne({ _id: id });
+
+    if (!pet) {
+      res.status(404).json({ message: 'Pet não encontrado!' });
+      return
+    }
+
+    // check if logged in user registered the pet
+    const token = getToken(req);
+    if (!token) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+    const user = await getUserByToken(token);
+    if (!user) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+
+    if (pet.user._id.toString() !== user._id.toString()) {
+      res.status(422).json({ message: 'Houve um problema em processar sua solicitação, tente novamente mais tarde!' });
+      return
+    }
+
+    pet.available = false;
+
+    await Pet.findByIdAndUpdate(id, pet);
+
+    res.status(200).json({ message: 'Parabéns! O ciclo de adoção foi finalizado com sucesso!' });
   }
 }
