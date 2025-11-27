@@ -107,6 +107,7 @@ export const PetController = {
   getPetById: async (req: Request, res: Response) => {
     const id = req.params.id;
 
+    // check if id is valid
     if (!id) {
       res.status(401).json({ message: 'ID necessário' });
       return
@@ -116,6 +117,7 @@ export const PetController = {
       return
     }
 
+    // check if pets exists
     const pet = await Pet.findOne({ _id: id });
 
     if (!pet) {
@@ -123,5 +125,47 @@ export const PetController = {
     }
 
     res.status(200).json({ pet: pet });
+  },
+
+  removePetById: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    // check if id is valid
+    if (!id) {
+      res.status(401).json({ message: 'ID necessário' });
+      return
+    }
+    if (!ObjectId.isValid(id)) {
+      res.status(422).json({ message: 'ID inválido' });
+      return
+    }
+
+    // check if pets exists
+    const pet = await Pet.findOne({ _id: id });
+
+    if (!pet) {
+      res.status(404).json({ message: 'Pet não encontrado!' });
+      return
+    }
+
+    // check if logged in user registered the pet
+    const token = getToken(req);
+    if (!token) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+    const user = await getUserByToken(token);
+    if (!user) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+
+    if (pet !== null && pet.user._id.toString() !== user._id.toString()) {
+      res.status(422).json({ message: 'Houve um problema em processar sua solicitação, tente novamente mais tarde!' });
+      return
+    }
+
+    await Pet.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Pet deletado com sucesso!' });
   }
 }
