@@ -176,7 +176,7 @@ export const PetController = {
 
     const updatedData: Record<string, any> = {};
 
-    // check if pets exists
+    // check if pet exists
     const pet = await Pet.findOne({ _id: id });
 
     if (!pet) {
@@ -232,5 +232,56 @@ export const PetController = {
     await Pet.findByIdAndUpdate(id, updatedData);
 
     res.status(200).json({ message: "Pet atualizado com sucesso!" });
+  },
+
+  schedule: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    // check if pet exists
+    const pet = await Pet.findOne({ _id: id });
+
+    if (!pet) {
+      res.status(404).json({ message: 'Pet não encontrado!' });
+    }
+
+    // check if user registered the pet
+    const token = getToken(req);
+    if (!token) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+    const user = await getUserByToken(token);
+    if (!user) {
+      res.status(401).json({ message: 'Acesso negado!' });
+      return
+    }
+
+    if (pet !== null && pet.user._id.equals(user._id)) {
+      res.status(422).json({ message: 'Você não pode agendar uma visita com seu próprio Pet!' });
+      return
+    }
+
+    // check if user has already scheduled a visit
+    if (pet !== null && pet.adopter) {
+      if (pet.adopter._id.equals(user._id)) {
+        res.status(422).json({ message: 'Você já agendou uma visita para este Pet!' });
+        return
+      }
+    }
+
+    // add user to pet
+    if (pet !== null) {
+      pet.adopter = {
+        _id: user._id,
+        name: user.name
+      }
+
+      await Pet.findByIdAndUpdate(id, pet)
+      res.status(200).json({ message: `A visita foi agendada com sucesso, entre em contato com ${pet.user.name} pelo telefone ${pet.user.phone}` });
+      return
+    }
+
+
+
   }
 }
