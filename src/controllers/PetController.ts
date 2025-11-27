@@ -68,5 +68,21 @@ export const PetController = {
     const pets = await Pet.find().sort('-createdAt');
 
     res.status(200).json({ pets: pets, });
+  },
+
+  getAllUserPets: async (req: Request, res: Response) => {
+    // get user from token
+    const token = getToken(req);
+    if (!token) {
+      return res.status(401).json({ message: 'Acesso negado!' });
+    }
+    const user = await getUserByToken(token);
+    if (!user) {
+      return res.status(401).json({ message: 'Acesso negado!' });
+    }
+
+    const pets = await Pet.find({ 'user._id': user._id }).sort('-createdAt');
+
+    res.status(200).json({ pets })
   }
 }

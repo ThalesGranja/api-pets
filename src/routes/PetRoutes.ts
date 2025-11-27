@@ -8,6 +8,7 @@ import verifyToken from '../helpers/verify-token'
 // rotas
 router.post('/create', verifyToken, PetController.create);
 router.get('/', PetController.getAll);
+router.get('/mypets', verifyToken, PetController.getAllUserPets);
 
 
 
