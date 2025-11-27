@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/IUser';
 import jwt from 'jsonwebtoken';
@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 // helpers
 import createUserToken from '../helpers/create-user-token';
 import getToken from '../helpers/get-token';
+import getUserByToken from '../helpers/get-user-by-token';
 
 export const UserController = {
   register: async (req: Request, res: Response) => {
@@ -134,7 +135,56 @@ export const UserController = {
   },
 
   editUser: async (req: Request, res: Response) => {
-    res.status(200).json({ message: 'Deu certo o update!' });
-    return
+    const id = req.params.id;
+
+    // get current user
+    const token = getToken(req);
+    if (!token) {
+      return res.status(401).json({ message: 'Acesso negado!' });
+    }
+    const user = await getUserByToken(token);
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    const { name, email, phone, password, confirmpassword } = req.body;
+
+    // validations
+    if (!name) {
+      res.status(422).json({ message: 'O nome é obrigatório' });
+      return;
+    }
+
+    if (!email) {
+      res.status(422).json({ message: 'O e-mail é obrigatório' });
+      return;
+    }
+
+    // check if email already exists and belongs to another user
+    const userExists = await User.findOne({ email: email });
+
+    if (user.email !== email && userExists) {
+      res.status(422).json({ message: 'Por favor, utilize outro e-mail' });
+      return;
+    }
+
+    if (!phone) {
+      res.status(422).json({ message: 'O telefone é obrigatório' });
+      return
+    }
+    if (!password) {
+      res.status(422).json({ message: 'A senha é obrigatória' });
+      return
+    }
+    if (!confirmpassword) {
+      res.status(422).json({ message: 'A confirmação de senha é obrigatória' });
+      return
+    }
+
+    if (password !== confirmpassword) {
+      res.status(422).json({ message: 'A senha e a confirmação de senha devem ser iguais!' })
+      return
+    }
+
   }
 }
