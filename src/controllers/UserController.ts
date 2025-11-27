@@ -202,6 +202,23 @@ export const UserController = {
       res.status(500).json({ message: error });
       return
     }
+  },
 
+  deleteUser: async (req: Request, res: Response) => {
+    const id = req.params.id;
+
+    // get current user
+    const token = getToken(req);
+    if (!token) {
+      return res.status(401).json({ message: 'Acesso negado!' });
+    }
+    const checkUser = await getUserByToken(token);
+    if (!checkUser) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // delete user
+    const user = await User.findByIdAndDelete(id);
+    return res.status(200).json({ message: 'Usuário deletado com sucesso!' });
   }
 }
