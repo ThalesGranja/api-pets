@@ -6,7 +6,7 @@ const router = Router();
 import verifyToken from '../helpers/verify-token'
 
 // rotas
-router.post('/create', PetController.create);
+router.post('/create', verifyToken, PetController.create);
 
 
 
