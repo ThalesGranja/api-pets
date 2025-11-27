@@ -62,5 +62,11 @@ export const PetController = {
     } catch (error) {
       res.status(500).json({ message: error })
     }
+  },
+
+  getAll: async (req: Request, res: Response) => {
+    const pets = await Pet.find().sort('-createdAt');
+
+    res.status(200).json({ pets: pets, });
   }
 }
