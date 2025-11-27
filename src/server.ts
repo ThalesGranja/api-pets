@@ -1,6 +1,7 @@
 // config inicial
 import express, { Request, Response } from "express";
 import UserRoutes from "./routes/UserRoutes";
+import PetRoutes from "./routes/PetRoutes";
 
 const app = express();
 
@@ -8,7 +9,8 @@ const app = express();
 app.use(express.json());
 
 // routes
-app.use('/users', UserRoutes)
+app.use('/users', UserRoutes);
+app.use('/pets', PetRoutes);
 const PORT = 5000;
 
 app.listen(PORT, () => {
