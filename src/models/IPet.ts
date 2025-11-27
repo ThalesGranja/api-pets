@@ -1,5 +1,18 @@
 import mongoose from '../db/conn';
+import { Document } from 'mongoose';
+
 const Schema = mongoose.Schema;
+
+// interface
+export interface IPet extends Document {
+  name: string;
+  age: number;
+  weight: number;
+  color: string;
+  available: boolean;
+  user: object;
+  adopter: object;
+}
 
 const Pet = mongoose.model(
   'Pet',
