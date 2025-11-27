@@ -103,11 +103,17 @@ export const UserController = {
 
     if (req.headers.authorization) {
       const token = getToken(req);
-      const decoded = jwt.verify(token, 'nossosecret');
 
-      currentUser = await User.findById(decoded.id);
-      currentUser?.password = undefined;
-
+      if (!token) {
+        currentUser = null;
+      } else {
+        try {
+          const decoded = jwt.verify(token, 'nossosecret') as { id: string };
+          currentUser = await User.findById(decoded.id);
+        } catch (err) {
+          currentUser = null;
+        }
+      }
     } else {
       currentUser = null;
     }
